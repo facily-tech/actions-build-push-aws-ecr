@@ -1,0 +1,38 @@
+name: 'Build and Push Container on AWS ECR'
+description: 'Build and Push Container on AWS ECR'
+inputs:
+  aws-region:
+    description: 'AWS Region, e.g. us-east-2'
+    required: true
+  role-to-assume:
+    description: >-
+      Use the provided credentials to assume an IAM role and configure the Actions
+      environment with the assumed role credentials rather than with the provided
+      credentials
+    required: true
+  docker-registry:
+    description: 'AWS ECR Registry'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@master
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: ${{ inputs.role-to-assume }}
+        role-session-name: GitHubActionsECR
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: build
+      env:
+        DOCKER_REGISTRY: ${{ inputs.docker-registry }}
+      run: | 
+        aws ecr describe-repositories --repository-names "$GITHUB_REPOSITORY" || aws ecr create-repository --repository-name "$GITHUB_REPOSITORY"
+        docker pull $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest || true
+        docker build --cache-from $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest -t $DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA .
+        docker tag "$DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA" $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest
+        docker push "$DOCKER_REGISTRY/$GITHUB_REPOSITORY" -a      
