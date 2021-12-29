@@ -30,6 +30,7 @@ runs:
     - name: build
       env:
         DOCKER_REGISTRY: ${{ inputs.docker-registry }}
+      shell: bash        
       run: | 
         aws ecr describe-repositories --repository-names "$GITHUB_REPOSITORY" || aws ecr create-repository --repository-name "$GITHUB_REPOSITORY"
         docker pull $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest || true
