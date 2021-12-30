@@ -16,10 +16,11 @@ inputs:
   dockerfile-path:
     description: 'The Dockerfile path'
     default: '.'
-    required: true    
+    required: false    
   docker-build-extra-args:
     description: 'Extra arguments for docker build'
-    required: true
+    default: ''
+    required: false
 runs:
   using: "composite"
   steps:
