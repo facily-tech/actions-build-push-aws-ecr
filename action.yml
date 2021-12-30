@@ -42,6 +42,6 @@ runs:
       run: | 
         aws ecr describe-repositories --repository-names "$GITHUB_REPOSITORY" || aws ecr create-repository --repository-name "$GITHUB_REPOSITORY"
         docker pull $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest || true
-        docker build ${{ inputs.docker-build-extra-args }} --cache-from $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest -t $DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA ${{ inputd.dockerfile-path }}
+        docker build ${{ inputs.docker-build-extra-args }} --cache-from $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest -t $DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA ${{ inputs.dockerfile-path }}
         docker tag "$DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA" $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest
         docker push "$DOCKER_REGISTRY/$GITHUB_REPOSITORY" -a      
