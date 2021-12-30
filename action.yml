@@ -13,6 +13,13 @@ inputs:
   docker-registry:
     description: 'AWS ECR Registry'
     required: true
+  dockerfile-path:
+    description: 'The Dockerfile path'
+    default: '.'
+    required: true    
+  docker-build-extra-args:
+    description: 'Extra arguments for docker build'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -34,6 +41,6 @@ runs:
       run: | 
         aws ecr describe-repositories --repository-names "$GITHUB_REPOSITORY" || aws ecr create-repository --repository-name "$GITHUB_REPOSITORY"
         docker pull $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest || true
-        docker build --cache-from $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest -t $DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA .
+        docker build ${{ inputs.docker-build-extra-args }} --cache-from $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest -t $DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA ${{ inputd.dockerfile-path }}
         docker tag "$DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA" $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest
         docker push "$DOCKER_REGISTRY/$GITHUB_REPOSITORY" -a      
