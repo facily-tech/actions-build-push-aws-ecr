@@ -48,7 +48,7 @@ runs:
         then 
               export REPOSITORY_NAME=$GITHUB_REPOSITORY
         else 
-              export REPOSITORY_NAME=${{ inputs.repository-name }}
+              export REPOSITORY_NAME=facily-tech/${{ inputs.repository-name }}
         fi 
         aws ecr describe-repositories --repository-names "${REPOSITORY_NAME}" || aws ecr create-repository --repository-name "${REPOSITORY_NAME}"
         docker pull $DOCKER_REGISTRY/${REPOSITORY_NAME}:latest || true
