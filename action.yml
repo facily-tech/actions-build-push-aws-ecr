@@ -21,6 +21,10 @@ inputs:
     description: 'Extra arguments for docker build'
     default: ''
     required: false
+  repository-name:
+    description: 'Repository Name '
+    default: ''
+    required: false    
 runs:
   using: "composite"
   steps:
@@ -39,9 +43,15 @@ runs:
       env:
         DOCKER_REGISTRY: ${{ inputs.docker-registry }}
       shell: bash        
-      run: | 
-        aws ecr describe-repositories --repository-names "$GITHUB_REPOSITORY" || aws ecr create-repository --repository-name "$GITHUB_REPOSITORY"
-        docker pull $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest || true
-        docker build ${{ inputs.docker-build-extra-args }} --cache-from $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest -t $DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA ${{ inputs.dockerfile-path }}
-        docker tag "$DOCKER_REGISTRY/$GITHUB_REPOSITORY:$GITHUB_SHA" $DOCKER_REGISTRY/$GITHUB_REPOSITORY:latest
-        docker push "$DOCKER_REGISTRY/$GITHUB_REPOSITORY" -a      
+      run: |
+        if [ -z "${{ inputs.repository-name }}" ]
+        then 
+              export REPOSITORY_NAME=$GITHUB_REPOSITORY
+        else 
+              export REPOSITORY_NAME=facily-tech/${{ inputs.repository-name }}
+        fi 
+        aws ecr describe-repositories --repository-names "${REPOSITORY_NAME}" || aws ecr create-repository --repository-name "${REPOSITORY_NAME}"
+        docker pull $DOCKER_REGISTRY/${REPOSITORY_NAME}:latest || true
+        docker build ${{ inputs.docker-build-extra-args }} --cache-from $DOCKER_REGISTRY/${REPOSITORY_NAME}:latest -t $DOCKER_REGISTRY/${REPOSITORY_NAME}:$GITHUB_SHA ${{ inputs.dockerfile-path }}
+        docker tag "$DOCKER_REGISTRY/${REPOSITORY_NAME}:$GITHUB_SHA" $DOCKER_REGISTRY/${REPOSITORY_NAME}:latest
+        docker push "$DOCKER_REGISTRY/${REPOSITORY_NAME}" -a      
