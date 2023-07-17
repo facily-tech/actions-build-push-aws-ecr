@@ -22,8 +22,28 @@ inputs:
   oci-compartment-ocid:
     description: 'Compartment Name'
     required: true
+  # oci-auth-token:
+  #   description: 'Token OCI'
+  #   required: true
+  # oci-cli-user:
+  #   description: 'User ID - OCI'
+  #   required: true
+  # oci-cli-fingerprint:
+  #   description: 'Fingerprint ID user - OCI'
+  #   required: true
+  # oci-cli-key-content:
+  #   description: 'content private key - OCI'
+  #   required: true
+  # oci-cli-tenancy:
+  #   description: 'Tenancy ID - OCI'
+  #   required: true
+
+secrets:
+  oci-compartment-ocid:
+    description: 'Compartment ID - OCI'
+    required: true
   oci-auth-token:
-    description: 'Token OCI'
+    description: 'Token ID - OCI'
     required: true
   oci-cli-user:
     description: 'User ID - OCI'
@@ -33,9 +53,6 @@ inputs:
     required: true
   oci-cli-key-content:
     description: 'content private key - OCI'
-    required: true
-  oci-cli-tenancy:
-    description: 'Tenancy ID - OCI'
     required: true
 
 runs:
@@ -48,31 +65,31 @@ runs:
         name: facily-tech/${{ inputs.repository-name }}
         compartment: ${{ inputs.oci-compartment-ocid }}
       env:
-        OCI_CLI_USER: ${{ inputs.oci-cli-user }}
+        OCI_CLI_USER: ${{ secrets.oci-cli-user }}
         OCI_CLI_TENANCY: ${{ inputs.oci-cli-tenancy }}
-        OCI_CLI_FINGERPRINT: ${{ inputs.oci-cli-fingerprint }}
-        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-cli-key-content }}
+        OCI_CLI_FINGERPRINT: ${{ secrets.oci-cli-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ secrets.oci-cli-key-content }}
         OCI_CLI_REGION: ${{ inputs.aws-region }}
 
     - name: Log into OCIR
       uses: oracle-actions/login-ocir@v1.2.1
       id: login-ocir
       with:
-        auth_token: ${{ inputs.oci-auth-token }}
+        auth_token: ${{ secrets.oci-auth-token }}
       env:
-        OCI_CLI_USER: ${{ inputs.oci-cli-user }}
+        OCI_CLI_USER: ${{ secrets.oci-cli-user }}
         OCI_CLI_TENANCY: ${{ inputs.oci-cli-tenancy }}
-        OCI_CLI_FINGERPRINT: ${{ inputs.oci-cli-fingerprint }}
-        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-cli-key-content }}
+        OCI_CLI_FINGERPRINT: ${{ secrets.oci-cli-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ secrets.oci-cli-key-content }}
         OCI_CLI_REGION: ${{ inputs.aws-region }}
 
     - name: build
       env:
         DOCKER_REGISTRY: ${{ inputs.docker-registry }}
-        OCI_CLI_USER: ${{ inputs.oci-cli-user }}
+        OCI_CLI_USER: ${{ secrets.oci-cli-user }}
         OCI_CLI_TENANCY: ${{ inputs.oci-cli-tenancy }}
-        OCI_CLI_FINGERPRINT: ${{ inputs.oci-cli-fingerprint }}
-        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-cli-key-content }}
+        OCI_CLI_FINGERPRINT: ${{ secrets.oci-cli-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ secrets.oci-cli-key-content }}
         OCI_CLI_REGION: ${{ inputs.aws-region }}
       shell: bash
       run: |
