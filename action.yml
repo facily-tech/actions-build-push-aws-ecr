@@ -43,13 +43,13 @@ runs:
       id: get-ocir-repository
       with:
         name: facily-tech/${{ inputs.repository-name }}
-        compartment: ${{ input.oci-compartment-ocid }}
+        compartment: ${{ inputs.oci-compartment-ocid }}
 
     - name: Log into OCIR
       uses: oracle-actions/login-ocir@v1.2.1
       id: login-ocir
       with:
-        auth_token: ${{ input.oci-auth-token }}
+        auth_token: ${{ inputs.oci-auth-token }}
 
     - name: build
       env:
