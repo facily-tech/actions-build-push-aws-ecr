@@ -1,14 +1,8 @@
-name: 'Build and Push Container on AWS ECR'
-description: 'Build and Push Container on AWS ECR'
+name: 'Build and Push Container on OCI'
+description: 'Build and Push Container on OCI'
 inputs:
   aws-region:
     description: 'AWS Region, e.g. us-east-2'
-    required: true
-  role-to-assume:
-    description: >-
-      Use the provided credentials to assume an IAM role and configure the Actions
-      environment with the assumed role credentials rather than with the provided
-      credentials
     required: true
   docker-registry:
     description: 'AWS ECR Registry'
@@ -16,7 +10,7 @@ inputs:
   dockerfile-path:
     description: 'The Dockerfile path'
     default: '.'
-    required: false    
+    required: false
   docker-build-extra-args:
     description: 'Extra arguments for docker build'
     default: ''
@@ -24,34 +18,51 @@ inputs:
   repository-name:
     description: 'Repository Name '
     default: ''
-    required: false    
+    required: false
+  oci-compartment-ocid:
+    description: 'Compartment Name'
+    required: true
+  oci-auth-token:
+    description: 'Token OCI'
+    required: true
+  oci-cli-user:
+    description: 'User ID - OCI'
+    required: true
+  oci-cli-fingerprint:
+    description: 'Fingerprint ID user - OCI'
+    required: true
+  oci-cli-key-content:
+    description: 'content private key - OCI'
+    required: true
+
 runs:
   using: "composite"
   steps:
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@master
+    - name: Get or create an OCIR Repository
+      uses: oracle-actions/get-ocir-repository@v1.2.1
+      id: get-ocir-repository
       with:
-        aws-region: ${{ inputs.aws-region }}
-        role-to-assume: ${{ inputs.role-to-assume }}
-        role-session-name: GitHubActionsECR
+        name: facily-tech/${{ inputs.repository-name }}
+        compartment: ${{ input.oci-compartment-ocid }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+    - name: Log into OCIR
+      uses: oracle-actions/login-ocir@v1.2.1
+      id: login-ocir
+      with:
+        auth_token: ${{ input.oci-auth-token }}
 
     - name: build
       env:
         DOCKER_REGISTRY: ${{ inputs.docker-registry }}
-      shell: bash        
+      shell: bash
       run: |
         if [ -z "${{ inputs.repository-name }}" ]
-        then 
+        then
               export REPOSITORY_NAME=$GITHUB_REPOSITORY
-        else 
+        else
               export REPOSITORY_NAME=facily-tech/${{ inputs.repository-name }}
-        fi 
-        aws ecr describe-repositories --repository-names "${REPOSITORY_NAME}" || aws ecr create-repository --repository-name "${REPOSITORY_NAME}"
-        docker pull $DOCKER_REGISTRY/${REPOSITORY_NAME}:latest || true
-        docker build ${{ inputs.docker-build-extra-args }} --cache-from $DOCKER_REGISTRY/${REPOSITORY_NAME}:latest -t $DOCKER_REGISTRY/${REPOSITORY_NAME}:$GITHUB_SHA ${{ inputs.dockerfile-path }}
-        docker tag "$DOCKER_REGISTRY/${REPOSITORY_NAME}:$GITHUB_SHA" $DOCKER_REGISTRY/${REPOSITORY_NAME}:latest
-        docker push "$DOCKER_REGISTRY/${REPOSITORY_NAME}" -a      
+        fi
+        docker pull ${{ steps.get-ocir-repository.outputs.repo_path }}:latest || true
+        docker build ${{ inputs.docker-build-extra-args }} --cache-from ${{ steps.get-ocir-repository.outputs.repo_path }}:latest -t ${{ steps.get-ocir-repository.outputs.repo_path }}:$GITHUB_SHA ${{ inputs.dockerfile-path }}
+        docker tag "${{ steps.get-ocir-repository.outputs.repo_path }}:$GITHUB_SHA" ${{ steps.get-ocir-repository.outputs.repo_path }}:latest
+        docker push "${{ steps.get-ocir-repository.outputs.repo_path }}" -a
