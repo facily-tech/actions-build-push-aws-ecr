@@ -47,17 +47,33 @@ runs:
       with:
         name: facily-tech/${{ inputs.repository-name }}
         compartment: ${{ inputs.oci-compartment-ocid }}
-        oci-cli-region: ${{ inputs.aws-region }}
+      env:
+        OCI_CLI_USER: ${{ inputs.oci-cli-user }}
+        OCI_CLI_TENANCY: ${{ inputs.oci-cli-tenancy }}
+        OCI_CLI_FINGERPRINT: ${{ inputs.oci-cli-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-cli-key-content }}
+        OCI_CLI_REGION: ${{ inputs.aws-region }}
 
     - name: Log into OCIR
       uses: oracle-actions/login-ocir@v1.2.1
       id: login-ocir
       with:
         auth_token: ${{ inputs.oci-auth-token }}
+      env:
+        OCI_CLI_USER: ${{ inputs.oci-cli-user }}
+        OCI_CLI_TENANCY: ${{ inputs.oci-cli-tenancy }}
+        OCI_CLI_FINGERPRINT: ${{ inputs.oci-cli-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-cli-key-content }}
+        OCI_CLI_REGION: ${{ inputs.aws-region }}
 
     - name: build
       env:
         DOCKER_REGISTRY: ${{ inputs.docker-registry }}
+        OCI_CLI_USER: ${{ inputs.oci-cli-user }}
+        OCI_CLI_TENANCY: ${{ inputs.oci-cli-tenancy }}
+        OCI_CLI_FINGERPRINT: ${{ inputs.oci-cli-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ inputs.oci-cli-key-content }}
+        OCI_CLI_REGION: ${{ inputs.aws-region }}
       shell: bash
       run: |
         if [ -z "${{ inputs.repository-name }}" ]
