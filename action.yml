@@ -38,23 +38,6 @@ inputs:
     description: 'Tenancy ID - OCI'
     required: true
 
-# inputs:
-#   oci-compartment-ocid:
-#     description: 'Compartment ID - OCI'
-#     required: true
-#   oci-auth-token:
-#     description: 'Token ID - OCI'
-#     required: true
-#   oci-cli-user:
-#     description: 'User ID - OCI'
-#     required: true
-#   oci-cli-fingerprint:
-#     description: 'Fingerprint ID user - OCI'
-#     required: true
-#   oci-cli-key-content:
-#     description: 'content private key - OCI'
-#     required: true
-
 runs:
   using: "composite"
   steps:
